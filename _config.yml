@@ -19,7 +19,7 @@ title: 珊珊Dyna的博客 # the main title
 tagline: A text-focused Jekyll theme # it will display as the subtitle
 
 description: >- # used by seo meta and the atom feed
-            珊珊Dyna的个人博客，分享技术知识
+  珊珊Dyna的个人博客，分享技术知识
   A minimal, responsive and feature-rich Jekyll theme for technical writing.
 
 # Fill in the protocol & hostname for your site.
@@ -40,7 +40,7 @@ social:
   fediverse_handle: # fill in your fediverse handle. E.g. "@username@domain.com"
   links:
     # The first element serves as the copyright owner's link
- #   - https://twitter.com/username # change to your Twitter homepage
+    #   - https://twitter.com/username # change to your Twitter homepage
     - https://github.com/Sunshine-skyy # change to your GitHub homepage
     # Uncomment below to add more social links
     # - https://www.facebook.com/username
