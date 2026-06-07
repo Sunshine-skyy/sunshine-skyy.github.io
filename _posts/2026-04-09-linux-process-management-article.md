@@ -333,7 +333,7 @@ int main() {
 
 所以在实际编程中，`exec()` 后面一般要紧跟错误处理代码。
 
-![进程控制主线流程图](04-process-control-mainline.png){: w="680" }
+![进程控制主线流程图](04-process-control-mainline.png){: w="480" }
 
 *图 4：多数多进程程序都遵循“`fork -> exec -> wait/waitpid`”这条主线。*
 
@@ -372,7 +372,7 @@ int main() {
 
 这个区别一定要分清。
 
-![孤儿进程与僵尸进程对比图](05-orphan-vs-zombie.png){: w="680" }
+![孤儿进程与僵尸进程对比图](05-orphan-vs-zombie.png){: w="480" }
 
 *图 5：孤儿进程是“子进程还活着但父进程没了”，僵尸进程是“子进程已经结束但父进程还没回收”。*
 
