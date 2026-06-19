@@ -554,11 +554,9 @@ ALTER TABLE posts ADD COLUMN category VARCHAR(100) NOT NULL DEFAULT 'general';
 - 项目简介区域
 - 功能概览区域
 
-示例占位：
 
-```md
 ![系统主页截图](/assets/img/posts/k8s-cloud-native-blog/home-page.png)
-```
+
 
 ### 2. 文章管理页面截图
 
@@ -570,11 +568,9 @@ ALTER TABLE posts ADD COLUMN category VARCHAR(100) NOT NULL DEFAULT 'general';
 - 分页区域
 - 文章列表
 
-示例占位：
 
-```md
 ![文章管理页面截图](/assets/img/posts/k8s-cloud-native-blog/manage-page.png)
-```
+
 
 ### 3. 系统状态页面截图
 
@@ -585,11 +581,9 @@ ALTER TABLE posts ADD COLUMN category VARCHAR(100) NOT NULL DEFAULT 'general';
 - `/api/metrics` 状态
 - 系统状态卡片或状态看板
 
-示例占位：
 
-```md
 ![系统状态页面截图](/assets/img/posts/k8s-cloud-native-blog/status-page.png)
-```
+
 
 如果后续你还想补充，也可以再增加一张：
 
