@@ -542,9 +542,6 @@ ALTER TABLE posts ADD COLUMN category VARCHAR(100) NOT NULL DEFAULT 'general';
 
 ## 十三、页面截图展示
 
-这一部分预留给系统实际运行后的界面截图，方便从“能部署”进一步展示到“效果如何”。
-
-建议至少放这三类截图：
 
 ### 1. 系统主页截图
 
@@ -584,12 +581,6 @@ ALTER TABLE posts ADD COLUMN category VARCHAR(100) NOT NULL DEFAULT 'general';
 
 ![系统状态页面截图](/assets/img/posts/k8s-cloud-native-blog/status-page.png)
 
-
-如果后续你还想补充，也可以再增加一张：
-
-- 删除弹窗截图
-- 搜索结果截图
-- 分类筛选结果截图
 
 ## 十四、部署完成后的验证方式
 
