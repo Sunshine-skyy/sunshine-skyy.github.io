@@ -20,7 +20,7 @@ media_subpath: /assets/img/posts/k8s-cloud-native-blog/
 
 1. 介绍这个博客系统的整体架构和实现思路。
 2. 梳理我在 Kubernetes 集群中实际部署它的完整过程。
-3. 总结我在部署过程中遇到的问题、原因和解决方式，方便后续复现。
+3. 总结在部署过程中遇到的问题、原因和解决方式，方便后续复现。
 
 ## 一、项目背景
 
@@ -265,188 +265,9 @@ kubectl describe svc blog-mysql -n blog-platform
 
 这里还需要特别注意 `Service` 的 selector 必须和 MySQL Pod 的 label 一致，否则后端即使能解析服务名，也无法正确访问数据库。
 
-## 八、后端 API 设计与部署
+## 八、分类功能对应的数据库修改
 
-后端是整个系统最核心的业务层，对应文件包括：
-
-- `api-configmap.yaml`
-- `api-deployment.yaml`
-
-### 1. ConfigMap
-
-后端通过 `ConfigMap` 注入这些配置：
-
-- `DB_HOST`
-- `DB_PORT`
-- `API_PORT`
-
-### 2. API 实现方式
-
-后端使用 `node:16-alpine` 镜像，在容器启动时动态创建并运行一个 `Express` 应用。
-
-后端逻辑主要包括：
-
-- 初始化 MySQL 连接池
-- 自动创建 `posts` 表
-- 自动兼容 `category` 字段
-- 提供 `/posts`、`/posts/search`、`/posts/:id` 等接口
-- 提供 `/health`、`/ready`、`/metrics`
-
-### 3. 为什么我没有直接把后端代码单独做成镜像
-
-这是因为当前项目更偏向“使用 YAML 快速复现和教学展示”，所以我把后端脚本直接写进了 Deployment 中。
-
-这种做法的优点是：
-
-- 复现简单
-- 不需要额外构建自定义镜像
-- 便于课程和实验环境快速落地
-
-缺点也很明显：
-
-- 工程化程度有限
-- 不适合生产环境
-- 后端代码和部署配置耦合较深
-
-如果后续继续完善，这部分最值得进一步重构成独立应用源码仓库。
-
-### 4. 后端部署
-
-```bash
-kubectl apply -f api-configmap.yaml -n blog-platform
-kubectl apply -f api-deployment.yaml -n blog-platform
-```
-
-部署完成后，可以检查：
-
-```bash
-kubectl get pods -n blog-platform
-kubectl logs -n blog-platform -l tier=backend
-```
-
-正确结果应该是：
-
-- `blog-api` 的两个副本都能正常启动
-- Pod 状态为 `Running`
-- 日志中可以看到数据库初始化成功、服务监听成功等信息
-
-我这里将后端副本数设置为 `2`，这样能够体现 Deployment 多副本管理的能力。
-
-## 九、前端页面设计与部署
-
-前端对应文件是：
-
-- `frontend-deployment.yaml`
-
-它的特点是：前端页面和 Nginx 配置同样是动态写入容器的，而不是从外部镜像仓库中拉一个完整前端项目。
-
-### 1. 前端做了哪些事情
-
-前端不仅仅是一个文章展示页，而是一个具有“系统展示”性质的单页应用，包含：
-
-- 首页概览
-- 系统状态区
-- 文章管理区
-- 搜索与分类筛选
-- 删除弹窗
-- Metrics 展示说明
-
-页面里还通过 `/api/health`、`/api/ready`、`/api/metrics` 实时检查后端状态，用于体现这个项目的云原生特征。
-
-### 2. 前端和后端如何通信
-
-在 Nginx 配置中，我将：
-
-```nginx
-location /api/ {
-  proxy_pass http://blog-api:3000/;
-}
-```
-
-这样浏览器请求 `/api/...` 时，就会转发给后端服务 `blog-api`。
-
-这也是为什么前端页面中可以直接用：
-
-```javascript
-const API_URL = '/api';
-```
-
-### 3. 前端部署
-
-```bash
-kubectl apply -f frontend-deployment.yaml -n blog-platform
-```
-
-前端副本数同样设置为 `2`，对应的 `Service` 类型为：
-
-```yaml
-type: NodePort
-nodePort: 30080
-```
-
-因此部署完成后，可以通过：
-
-```text
-http://<NodeIP>:30080
-```
-
-访问博客系统。
-
-正确结果应该是：
-
-- 前端 Pod 状态为 `Running`
-- `blog-frontend` Service 已创建成功
-- 浏览器访问 `http://<NodeIP>:30080` 时可以正常打开博客首页
-
-## 十、Ingress 配置
-
-如果你的集群里已经安装了 Ingress Controller，还可以继续部署：
-
-```bash
-kubectl apply -f blog-ingress.yaml -n blog-platform
-```
-
-我的 Ingress 配置使用的是：
-
-- `networking.k8s.io/v1beta1`
-- host：`blog.local`
-
-如果 Ingress Controller 已经正常运行，并且本地已经做好 hosts 映射或 DNS 解析，就可以通过下面的地址访问：
-
-```text
-http://blog.local
-```
-
-这里必须特别说明一下：这不是新版本 Kubernetes 推荐的写法，而是因为我的环境是 `kubectl v1.18.20`，所以需要使用旧版本 API。
-
-这也是这个项目在公开时必须写清楚的兼容性信息之一。
-
-## 十一、推荐的部署顺序
-
-如果从头开始复现，我建议按下面顺序执行：
-
-```bash
-kubectl create namespace blog-platform
-kubectl apply -f mysql-pv.yaml
-kubectl apply -f mysql-secret.yaml -n blog-platform
-kubectl apply -f mysql-deployment.yaml -n blog-platform
-kubectl apply -f api-configmap.yaml -n blog-platform
-kubectl apply -f api-deployment.yaml -n blog-platform
-kubectl apply -f frontend-deployment.yaml -n blog-platform
-kubectl apply -f blog-ingress.yaml -n blog-platform
-```
-
-部署完成后，可以用下面命令继续检查：
-
-```bash
-kubectl get ingress -n blog-platform
-```
-
-正确结果应该是可以看到 `blog-ingress` 被成功创建，并且 host 为 `blog.local`。
-
-## 十二、分类功能对应的数据库修改
-
-由于添加分类功能会涉及数据库表结构修改，这部分更适合放在系统正式运行和功能验证之前说明。如果数据库中的 `posts` 表还没有 `category` 列，那么分类功能将无法正常工作。
+由于添加分类功能会涉及数据库表结构修改，这部分更适合放在数据库层部署完成之后说明。如果数据库中的 `posts` 表还没有 `category` 列，那么分类功能将无法正常工作。
 
 ### 1. 找到 MySQL Pod 名称
 
@@ -540,28 +361,241 @@ ALTER TABLE posts ADD COLUMN category VARCHAR(100) NOT NULL DEFAULT 'general';
 
 不过从部署和排错角度来看，手动掌握这一步仍然非常重要，因为它直接关系到分类功能能否正常运行，也更有助于理解后端功能和数据库结构之间的关系。
 
+## 九、后端 API 设计与部署
+
+后端是整个系统最核心的业务层，对应文件包括：
+
+- `api-configmap.yaml`
+- `api-deployment.yaml`
+
+### 1. ConfigMap
+
+后端通过 `ConfigMap` 注入这些配置：
+
+- `DB_HOST`
+- `DB_PORT`
+- `API_PORT`
+
+### 2. API 实现方式
+
+后端使用 `node:16-alpine` 镜像，在容器启动时动态创建并运行一个 `Express` 应用。
+
+后端逻辑主要包括：
+
+- 初始化 MySQL 连接池
+- 自动创建 `posts` 表
+- 自动兼容 `category` 字段
+- 提供 `/posts`、`/posts/search`、`/posts/:id` 等接口
+- 提供 `/health`、`/ready`、`/metrics`
+
+### 3. 为什么我没有直接把后端代码单独做成镜像
+
+这是因为当前项目更偏向“使用 YAML 快速复现和教学展示”，所以我把后端脚本直接写进了 Deployment 中。
+
+这种做法的优点是：
+
+- 复现简单
+- 不需要额外构建自定义镜像
+- 便于课程和实验环境快速落地
+
+缺点也很明显：
+
+- 工程化程度有限
+- 不适合生产环境
+- 后端代码和部署配置耦合较深
+
+如果后续继续完善，这部分最值得进一步重构成独立应用源码仓库。
+
+### 4. 后端部署
+
+```bash
+kubectl apply -f api-configmap.yaml -n blog-platform
+kubectl apply -f api-deployment.yaml -n blog-platform
+```
+
+部署完成后，可以检查：
+
+```bash
+kubectl get pods -n blog-platform
+kubectl logs -n blog-platform -l tier=backend
+```
+
+正确结果应该是：
+
+- `blog-api` 的两个副本都能正常启动
+- Pod 状态为 `Running`
+- 日志中可以看到数据库初始化成功、服务监听成功等信息
+
+我这里将后端副本数设置为 `2`，这样能够体现 Deployment 多副本管理的能力。
+
+## 十、前端页面设计与部署
+
+前端对应文件是：
+
+- `frontend-deployment.yaml`
+
+它的特点是：前端页面和 Nginx 配置同样是动态写入容器的，而不是从外部镜像仓库中拉一个完整前端项目。
+
+### 1. 前端做了哪些事情
+
+前端不仅仅是一个文章展示页，而是一个具有“系统展示”性质的单页应用，包含：
+
+- 首页概览
+- 系统状态区
+- 文章管理区
+- 搜索与分类筛选
+- 删除弹窗
+- Metrics 展示说明
+
+页面里还通过 `/api/health`、`/api/ready`、`/api/metrics` 实时检查后端状态，用于体现这个项目的云原生特征。
+
+### 2. 前端和后端如何通信
+
+在 Nginx 配置中，我将：
+
+```nginx
+location /api/ {
+  proxy_pass http://blog-api:3000/;
+}
+```
+
+这样浏览器请求 `/api/...` 时，就会转发给后端服务 `blog-api`。
+
+这也是为什么前端页面中可以直接用：
+
+```javascript
+const API_URL = '/api';
+```
+
+### 3. 前端部署
+
+```bash
+kubectl apply -f frontend-deployment.yaml -n blog-platform
+```
+
+前端副本数同样设置为 `2`，对应的 `Service` 类型为：
+
+```yaml
+type: NodePort
+nodePort: 30080
+```
+
+因此部署完成后，可以通过：
+
+```text
+http://<NodeIP>:30080
+```
+
+访问博客系统。
+
+正确结果应该是：
+
+- 前端 Pod 状态为 `Running`
+- `blog-frontend` Service 已创建成功
+- 浏览器访问 `http://<NodeIP>:30080` 时可以正常打开博客首页
+
+## 十一、Ingress 配置
+
+如果你的集群里已经安装了 Ingress Controller，还可以继续部署：
+
+```bash
+kubectl apply -f blog-ingress.yaml -n blog-platform
+```
+
+我的 Ingress 配置使用的是：
+
+- `networking.k8s.io/v1beta1`
+- host：`blog.local`
+
+如果 Ingress Controller 已经正常运行，并且本地已经做好 hosts 映射或 DNS 解析，就可以通过下面的地址访问：
+
+```text
+http://blog.local
+```
+
+这里必须特别说明一下：这不是新版本 Kubernetes 推荐的写法，而是因为我的环境是 `kubectl v1.18.20`，所以需要使用旧版本 API。
+
+这也是这个项目在公开时必须写清楚的兼容性信息之一。
+
+## 十二、推荐的部署顺序
+
+如果从头开始复现，我建议按下面顺序执行：
+
+```bash
+kubectl create namespace blog-platform
+kubectl apply -f mysql-pv.yaml
+kubectl apply -f mysql-secret.yaml -n blog-platform
+kubectl apply -f mysql-deployment.yaml -n blog-platform
+kubectl apply -f api-configmap.yaml -n blog-platform
+kubectl apply -f api-deployment.yaml -n blog-platform
+kubectl apply -f frontend-deployment.yaml -n blog-platform
+kubectl apply -f blog-ingress.yaml -n blog-platform
+```
+
+部署完成后，可以用下面命令继续检查：
+
+```bash
+kubectl get ingress -n blog-platform
+```
+
+正确结果应该是可以看到 `blog-ingress` 被成功创建，并且 host 为 `blog.local`。
+
 ## 十三、页面截图展示
 
+这一部分预留给系统实际运行后的界面截图，方便从“能部署”进一步展示到“效果如何”。
+
+建议至少放这三类截图：
 
 ### 1. 系统主页截图
 
+可以展示：
 
+- 首页整体布局
+- 项目简介区域
+- 功能概览区域
+
+示例占位：
+
+```md
 ![系统主页截图](home-page.png)
-
+```
 
 ### 2. 文章管理页面截图
 
+可以展示：
 
+- 文章发布表单
+- 搜索框
+- 分类筛选
+- 分页区域
+- 文章列表
 
+示例占位：
+
+```md
 ![文章管理页面截图](manage-page.png)
-
+```
 
 ### 3. 系统状态页面截图
 
+可以展示：
 
+- `/api/health` 状态
+- `/api/ready` 状态
+- `/api/metrics` 状态
+- 系统状态卡片或状态看板
 
+示例占位：
+
+```md
 ![系统状态页面截图](status-page.png)
+```
 
+如果后续你还想补充，也可以再增加一张：
+
+- 删除弹窗截图
+- 搜索结果截图
+- 分类筛选结果截图
 
 ## 十四、部署完成后的验证方式
 
