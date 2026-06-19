@@ -546,21 +546,21 @@ ALTER TABLE posts ADD COLUMN category VARCHAR(100) NOT NULL DEFAULT 'general';
 ### 1. 系统主页截图
 
 
-![系统主页截图](/assets/img/posts/k8s-cloud-native-blog/home-page.png)
+![系统主页截图](home-page.png)
 
 
 ### 2. 文章管理页面截图
 
 
 
-![文章管理页面截图](/assets/img/posts/k8s-cloud-native-blog/manage-page.png)
+![文章管理页面截图](manage-page.png)
 
 
 ### 3. 系统状态页面截图
 
 
 
-![系统状态页面截图](/assets/img/posts/k8s-cloud-native-blog/status-page.png)
+![系统状态页面截图](status-page.png)
 
 
 ## 十四、部署完成后的验证方式
