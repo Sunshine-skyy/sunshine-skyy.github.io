@@ -545,25 +545,12 @@ ALTER TABLE posts ADD COLUMN category VARCHAR(100) NOT NULL DEFAULT 'general';
 
 ### 1. 系统主页截图
 
-可以展示：
-
-- 首页整体布局
-- 项目简介区域
-- 功能概览区域
-
 
 ![系统主页截图](/assets/img/posts/k8s-cloud-native-blog/home-page.png)
 
 
 ### 2. 文章管理页面截图
 
-可以展示：
-
-- 文章发布表单
-- 搜索框
-- 分类筛选
-- 分页区域
-- 文章列表
 
 
 ![文章管理页面截图](/assets/img/posts/k8s-cloud-native-blog/manage-page.png)
@@ -571,12 +558,6 @@ ALTER TABLE posts ADD COLUMN category VARCHAR(100) NOT NULL DEFAULT 'general';
 
 ### 3. 系统状态页面截图
 
-可以展示：
-
-- `/api/health` 状态
-- `/api/ready` 状态
-- `/api/metrics` 状态
-- 系统状态卡片或状态看板
 
 
 ![系统状态页面截图](/assets/img/posts/k8s-cloud-native-blog/status-page.png)
