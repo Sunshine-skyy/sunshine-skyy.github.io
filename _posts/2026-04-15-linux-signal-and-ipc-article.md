@@ -32,7 +32,7 @@ media_subpath: /assets/img/posts/linux-signal-ipc/
 - 信号适合通知事件，不适合承载复杂数据
 
 <div align="center">
-  <img src="pending-ipc-overview.png" alt="进程间通信方式总览" style="width: 70%;" />
+  <img src="pending-ipc-overview.png" alt="进程间通信方式总览" style="width: 100%;" />
 </div>
 <p align="center"><em>图 1：进程间通信方式总览。</em></p>
 
@@ -365,7 +365,7 @@ key_t ftok(const char *pathname, int proj_id);
 6. 使用 `shmctl()` 管理或删除共享内存
 
 <div align="center">
-  <img src="pending-shared-memory-flow.png" alt="共享内存的创建、挂接与释放流程" style="width: 70%;" />
+  <img src="pending-shared-memory-flow.png" alt="共享内存的创建、挂接与释放流程" style="width: 40%;" />
 </div>
 <p align="center"><em>图 6：共享内存从创建到释放的基本流程。</em></p>
 
