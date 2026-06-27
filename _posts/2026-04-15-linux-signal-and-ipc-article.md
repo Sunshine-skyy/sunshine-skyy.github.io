@@ -31,11 +31,6 @@ media_subpath: /assets/img/posts/linux-signal-ipc/
 - 共享内存适合高效率大数据交换
 - 信号适合通知事件，不适合承载复杂数据
 
-<div align="center">
-  <img src="pending-ipc-overview.png" alt="进程间通信方式总览" style="width: 70%;" />
-</div>
-<p align="center"><em>图 1：进程间通信方式总览。</em></p>
-
 ---
 
 ## 一、进程间通信的四种常见方式
